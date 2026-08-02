@@ -1,8 +1,9 @@
 import os
 import random
-from datetime import datetime                                                                   
+import threading
+from datetime import datetime                                               
 from flask import Flask, render_template, redirect, url_for, request, flash, session
-from flask_sqlalchemy import SQLAlchemy                                                         
+from flask_sqlalchemy import SQLAlchemy                                     
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -13,7 +14,7 @@ app.config['SECRET_KEY'] = 'manab_secret_key_9938'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
-# --- Email Config ---                                                                          
+# --- Email Config ---                                                      
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
@@ -21,6 +22,13 @@ app.config['MAIL_USERNAME'] = 'Bbdegreecollegerangamatia@gmail.com'
 app.config['MAIL_PASSWORD'] = 'jofd caiz unhe yqch'
 
 mail = Mail(app)
+
+def send_async_email(app, msg):
+    with app.app_context():
+        try:
+            mail.send(msg)
+        except Exception as e:
+            print("Email error:", e)
 
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
@@ -30,23 +38,20 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
 class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)                                                
+    id = db.Column(db.Integer, primary_key=True)                            
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
 
-    # User Profile Data
     ans1 = db.Column(db.String(200), nullable=True)  # Name
     ans2 = db.Column(db.String(200), nullable=True)  # Mobile
     ans3 = db.Column(db.String(200), nullable=True)  # Roll No
     ans4 = db.Column(db.String(200), nullable=True)  # Stream
     is_questions_submitted = db.Column(db.Boolean, default=False)
 
-    # Exam Tracking Fields
     has_given_exam = db.Column(db.Boolean, default=False)
     exam_score = db.Column(db.String(50), nullable=True)
 
-    # Updated with cascade delete so user data is wiped automatically when user is deleted
     data_items = db.relationship('UserData', backref='owner', lazy=True, cascade='all, delete-orphan')
 
 class UserData(db.Model):
@@ -55,14 +60,12 @@ class UserData(db.Model):
     file_path = db.Column(db.String(200), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-# --- NOTICE BOARD MODEL ---
 class Notice(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     content = db.Column(db.Text, nullable=False)
     date_posted = db.Column(db.String(50), nullable=False)
 
-# --- QUIZ / EXAM QUESTION MODEL ---
 class QuizQuestion(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     question_text = db.Column(db.Text, nullable=False)
@@ -71,9 +74,8 @@ class QuizQuestion(db.Model):
     option3 = db.Column(db.String(200), nullable=False)
     option4 = db.Column(db.String(200), nullable=False)
     correct_option = db.Column(db.String(200), nullable=False)
-    is_published = db.Column(db.Boolean, default=False)  # Admin publish control flag
+    is_published = db.Column(db.Boolean, default=False)
 
-# --- IMPORTANT QUESTIONS MODEL ---
 class ImportantQuestion(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     question_title = db.Column(db.Text, nullable=False)
@@ -94,7 +96,6 @@ def index():
         return redirect(url_for('profile'))
     return redirect(url_for('login'))
 
-# --- USER LOGIN & REGISTER ---
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -128,7 +129,6 @@ def login():
 
     return render_template('login.html')
 
-# --- ADMIN LOGIN & DASHBOARD ---
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
@@ -154,12 +154,11 @@ def admin_dashboard():
     users_list = User.query.filter_by(is_admin=False, is_questions_submitted=True).all()
     notices_list = Notice.query.order_by(Notice.id.desc()).all()
     quiz_questions = QuizQuestion.query.all()
-    important_questions = ImportantQuestion.query.all()                                         
+    important_questions = ImportantQuestion.query.all()                     
     total_submissions = len(users_list)
 
     return render_template('admin_dashboard.html', users=users_list, total=total_submissions, notices=notices_list, quiz_questions=quiz_questions, important_questions=important_questions)
 
-# --- ADMIN: DELETE STUDENT ---
 @app.route('/admin/delete_user/<int:user_id>', methods=['POST'])
 @login_required
 def delete_user(user_id):
@@ -168,9 +167,8 @@ def delete_user(user_id):
         return redirect(url_for('login'))
 
     user_to_delete = User.query.get_or_404(user_id)
-
     if user_to_delete.is_admin:
-        flash('Cannot delete admin account!', 'danger')                                         
+        flash('Cannot delete admin account!', 'danger')                     
         return redirect(url_for('admin_dashboard'))
 
     db.session.delete(user_to_delete)
@@ -178,12 +176,10 @@ def delete_user(user_id):
     flash('Student and all associated data deleted successfully!', 'success')
     return redirect(url_for('admin_dashboard'))
 
-# --- ADMIN: ADD NOTICE ---
 @app.route('/admin/add_notice', methods=['POST'])
 @login_required
 def add_notice():
     if not current_user.is_admin:
-        flash('Unauthorized access!', 'danger')
         return redirect(url_for('login'))
 
     title = request.form.get('title')
@@ -198,12 +194,10 @@ def add_notice():
 
     return redirect(url_for('admin_dashboard'))
 
-# --- ADMIN: DELETE NOTICE ---
 @app.route('/admin/delete_notice/<int:notice_id>', methods=['POST'])
 @login_required
 def delete_notice(notice_id):
     if not current_user.is_admin:
-        flash('Unauthorized access!', 'danger')
         return redirect(url_for('login'))
 
     notice = Notice.query.get_or_404(notice_id)
@@ -212,7 +206,6 @@ def delete_notice(notice_id):
     flash('Notice deleted successfully!', 'success')
     return redirect(url_for('admin_dashboard'))
 
-# --- ADMIN: ADD IMPORTANT QUESTION ---
 @app.route('/admin/add_important_q', methods=['POST'])
 @login_required
 def add_important_q():
@@ -230,7 +223,6 @@ def add_important_q():
 
     return redirect(url_for('admin_dashboard'))
 
-# --- ADMIN: PUBLISH IMPORTANT QUESTION ---
 @app.route('/admin/publish_important_q/<int:q_id>', methods=['POST'])
 @login_required
 def publish_important_q(q_id):
@@ -243,7 +235,6 @@ def publish_important_q(q_id):
     flash('Important question published successfully!', 'success')
     return redirect(url_for('admin_dashboard'))
 
-# --- ADMIN: UNPUBLISH IMPORTANT QUESTION ---
 @app.route('/admin/unpublish_important_q/<int:q_id>', methods=['POST'])
 @login_required
 def unpublish_important_q(q_id):
@@ -256,11 +247,10 @@ def unpublish_important_q(q_id):
     flash('Important question unpublished successfully!', 'success')
     return redirect(url_for('admin_dashboard'))
 
-# --- ADMIN: DELETE IMPORTANT QUESTION ---
 @app.route('/admin/delete_important_q/<int:q_id>', methods=['POST'])
 @login_required
 def delete_important_q(q_id):
-    if not current_user.is_admin:                                                               
+    if not current_user.is_admin:                                           
         return redirect(url_for('login'))
 
     iq = ImportantQuestion.query.get_or_404(q_id)
@@ -269,7 +259,6 @@ def delete_important_q(q_id):
     flash('Important question deleted successfully!', 'success')
     return redirect(url_for('admin_dashboard'))
 
-# --- ADMIN: ADD QUIZ QUESTION (Draft by default) ---
 @app.route('/admin/add_quiz', methods=['POST'])
 @login_required
 def add_quiz():
@@ -289,7 +278,7 @@ def add_quiz():
             option1=option1,
             option2=option2,
             option3=option3,
-            option4=option4,                                                                    
+            option4=option4,                                                
             correct_option=correct_option,
             is_published=False
         )
@@ -299,7 +288,6 @@ def add_quiz():
 
     return redirect(url_for('admin_dashboard'))
 
-# --- ADMIN: PUBLISH ALL QUIZ QUESTIONS ---
 @app.route('/admin/publish_quiz', methods=['POST'])
 @login_required
 def publish_quiz():
@@ -310,7 +298,6 @@ def publish_quiz():
     flash('All exam questions have been successfully published for students!', 'success')
     return redirect(url_for('admin_dashboard'))
 
-# --- ADMIN: UNPUBLISH / HIDE QUIZ ---
 @app.route('/admin/unpublish_quiz', methods=['POST'])
 @login_required
 def unpublish_quiz():
@@ -322,10 +309,9 @@ def unpublish_quiz():
     flash('Exam unpublished successfully!', 'success')
     return redirect(url_for('admin_dashboard'))
 
-# --- ADMIN: DELETE INDIVIDUAL QUIZ QUESTION ---
 @app.route('/admin/delete_quiz/<int:quiz_id>', methods=['POST'])
 @login_required
-def delete_quiz(quiz_id):                                                                       
+def delete_quiz(quiz_id):                                                   
     if not current_user.is_admin:
         return redirect(url_for('login'))
 
@@ -335,11 +321,10 @@ def delete_quiz(quiz_id):
     flash('Exam question deleted successfully!', 'success')
     return redirect(url_for('admin_dashboard'))
 
-# --- ADMIN: DELETE ALL QUIZ QUESTIONS AT ONCE ---
 @app.route('/admin/delete_all_quiz', methods=['POST'])
 @login_required
 def delete_all_quiz():
-    if not current_user.is_admin:                                                               
+    if not current_user.is_admin:                                           
         return redirect(url_for('login'))
 
     QuizQuestion.query.delete()
@@ -348,7 +333,6 @@ def delete_all_quiz():
     flash('All exam questions deleted and student exam status reset successfully!', 'success')
     return redirect(url_for('admin_dashboard'))
 
-# --- USER QUESTION FORM ---
 @app.route('/questions', methods=['GET', 'POST'])
 @login_required
 def questions():
@@ -363,7 +347,6 @@ def questions():
 
     return render_template('questions.html')
 
-# --- EDIT PROFILE (Redirect to Questions) ---
 @app.route('/edit-profile')
 @login_required
 def edit_profile():
@@ -394,7 +377,6 @@ def profile():
     notices_list = Notice.query.order_by(Notice.id.desc()).all()
     return render_template('dashboard.html', user_data=user_data, notices=notices_list)
 
-# --- NSS IMPORTANT QUESTIONS PAGE (STUDENT) ---
 @app.route('/important-questions')
 @login_required
 def important_questions():
@@ -403,7 +385,6 @@ def important_questions():
     questions_list = ImportantQuestion.query.filter_by(is_published=True).all()
     return render_template('important_questions.html', important_questions=questions_list)
 
-# --- NSS DEDICATED EXAM PAGE (STUDENT) ---
 @app.route('/nss-exam', methods=['GET', 'POST'])
 @login_required
 def nss_exam():
@@ -427,12 +408,11 @@ def nss_exam():
         current_user.has_given_exam = True
         current_user.exam_score = score_str
         db.session.commit()
-                                                                                                
+                                                                            
         return render_template('nss_exam.html', questions=[], score=score_str, submitted=True, already_submitted=True)
 
     return render_template('nss_exam.html', questions=questions_list, submitted=False)
 
-# --- VIEW STUDENT PROFILE PAGE ---
 @app.route('/student/profile')
 @login_required
 def student_profile():
@@ -450,15 +430,17 @@ def forgot():
             session['reset_otp'] = str(otp)
             session['reset_email'] = email
             msg = Message('OTP for Password Reset', sender=app.config['MAIL_USERNAME'], recipients=[email])
-            msg.body = f'Your OTP is: {otp}'                                                    
-            mail.send(msg)
+            msg.body = f'Your OTP is: {otp}'                                
+            
+            # Background Thread जोड़ दिया गया है ताकि सर्वर क्रैश न हो
+            threading.Thread(target=send_async_email, args=(app, msg)).start()
+            
             flash('OTP has been sent to your email!', 'success')
             return redirect(url_for('reset_password'))
         else:
             flash('यह ईमेल हमारे डेटाबेस में रजिस्टर नहीं है!', 'danger')
     return render_template('forgot.html')
 
-# --- RESET PASSWORD (बिना @login_required के) ---
 @app.route('/reset_password', methods=['GET', 'POST'])
 def reset_password():
     if request.method == 'POST':
@@ -480,7 +462,6 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
-# --- DEFAULT ADMIN CREATION ---
 def create_default_admin():
     admin_email = "admin@gmail.com"
     admin = User.query.filter_by(email=admin_email).first()
