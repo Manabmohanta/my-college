@@ -14,7 +14,7 @@ app.config['SECRET_KEY'] = 'manab_secret_key_9938'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
-# --- Email Config (Updated for Render SSL Port 465) ---
+# --- Email Config ---
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USE_TLS'] = False
@@ -431,12 +431,18 @@ def forgot():
             otp = random.randint(100000, 999999)
             session['reset_otp'] = str(otp)
             session['reset_email'] = email
+            
+            # --- यहाँ ओटीपी को सीधे Render के लाइव कंसोल लॉग्स में प्रिंट किया गया है ---
+            print(f"\n================================")
+            print(f"PASSWORD RESET OTP FOR {email}: {otp}")
+            print(f"================================\n")
+            
             msg = Message('OTP for Password Reset', sender=app.config['MAIL_USERNAME'], recipients=[email])
             msg.body = f'Your OTP is: {otp}'
 
             threading.Thread(target=send_async_email, args=(app, msg)).start()
 
-            flash('OTP has been sent to your email!', 'success')
+            flash('OTP generated! Check Render logs to get your OTP.', 'success')
             return redirect(url_for('reset_password'))
         else:
             flash('यह ईमेल हमारे डेटाबेस में रजिस्टर नहीं है!', 'danger')
