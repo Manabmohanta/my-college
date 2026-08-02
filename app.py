@@ -161,7 +161,6 @@ def admin_dashboard():
 
     return render_template('admin_dashboard.html', users=users_list, total=total_submissions, notices=notices_list, quiz_questions=quiz_questions, important_questions=important_questions)
 
-# --- NEW: Admin Password Change Route ---
 @app.route('/admin/change-password', methods=['POST'])
 @login_required
 def admin_change_password():
@@ -496,16 +495,12 @@ def logout():
 def create_default_admin():
     admin_email = "admin@gmail.com"
     new_password = "Manab@7205"
-    
+
     admin = User.query.filter_by(email=admin_email, is_admin=True).first()
-    hashed_pw = generate_password_hash(new_password, method='scrypt')
-    
-    if admin:
-        admin.password = hashed_pw
-        admin.is_admin = True
-        admin.is_questions_submitted = True
-        db.session.commit()
-    else:
+
+    if not admin:
+        # केवल तभी डिफ़ॉल्ट एडमिन बनाएगा जब डेटाबेस में एडमिन बिल्कुल न हो
+        hashed_pw = generate_password_hash(new_password, method='scrypt')
         default_admin = User(
             email=admin_email,
             password=hashed_pw,
