@@ -1,9 +1,9 @@
 import os
 import random
 import threading
-from datetime import datetime                                               
+from datetime import datetime
 from flask import Flask, render_template, redirect, url_for, request, flash, session
-from flask_sqlalchemy import SQLAlchemy                                     
+from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -14,7 +14,7 @@ app.config['SECRET_KEY'] = 'manab_secret_key_9938'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
-# --- Email Config ---                                                      
+# --- Email Config ---
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
@@ -27,8 +27,9 @@ def send_async_email(app, msg):
     with app.app_context():
         try:
             mail.send(msg)
+            print("Email sent successfully!")
         except Exception as e:
-            print("Email error:", e)
+            print("CRITICAL EMAIL ERROR:", e)
 
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
@@ -38,7 +39,7 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
 class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)                            
+    id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
@@ -154,7 +155,7 @@ def admin_dashboard():
     users_list = User.query.filter_by(is_admin=False, is_questions_submitted=True).all()
     notices_list = Notice.query.order_by(Notice.id.desc()).all()
     quiz_questions = QuizQuestion.query.all()
-    important_questions = ImportantQuestion.query.all()                     
+    important_questions = ImportantQuestion.query.all()
     total_submissions = len(users_list)
 
     return render_template('admin_dashboard.html', users=users_list, total=total_submissions, notices=notices_list, quiz_questions=quiz_questions, important_questions=important_questions)
@@ -168,7 +169,7 @@ def delete_user(user_id):
 
     user_to_delete = User.query.get_or_404(user_id)
     if user_to_delete.is_admin:
-        flash('Cannot delete admin account!', 'danger')                     
+        flash('Cannot delete admin account!', 'danger')
         return redirect(url_for('admin_dashboard'))
 
     db.session.delete(user_to_delete)
@@ -250,7 +251,7 @@ def unpublish_important_q(q_id):
 @app.route('/admin/delete_important_q/<int:q_id>', methods=['POST'])
 @login_required
 def delete_important_q(q_id):
-    if not current_user.is_admin:                                           
+    if not current_user.is_admin:
         return redirect(url_for('login'))
 
     iq = ImportantQuestion.query.get_or_404(q_id)
@@ -278,7 +279,7 @@ def add_quiz():
             option1=option1,
             option2=option2,
             option3=option3,
-            option4=option4,                                                
+            option4=option4,
             correct_option=correct_option,
             is_published=False
         )
@@ -311,7 +312,7 @@ def unpublish_quiz():
 
 @app.route('/admin/delete_quiz/<int:quiz_id>', methods=['POST'])
 @login_required
-def delete_quiz(quiz_id):                                                   
+def delete_quiz(quiz_id):
     if not current_user.is_admin:
         return redirect(url_for('login'))
 
@@ -324,7 +325,7 @@ def delete_quiz(quiz_id):
 @app.route('/admin/delete_all_quiz', methods=['POST'])
 @login_required
 def delete_all_quiz():
-    if not current_user.is_admin:                                           
+    if not current_user.is_admin:
         return redirect(url_for('login'))
 
     QuizQuestion.query.delete()
@@ -408,7 +409,7 @@ def nss_exam():
         current_user.has_given_exam = True
         current_user.exam_score = score_str
         db.session.commit()
-                                                                            
+
         return render_template('nss_exam.html', questions=[], score=score_str, submitted=True, already_submitted=True)
 
     return render_template('nss_exam.html', questions=questions_list, submitted=False)
@@ -430,11 +431,10 @@ def forgot():
             session['reset_otp'] = str(otp)
             session['reset_email'] = email
             msg = Message('OTP for Password Reset', sender=app.config['MAIL_USERNAME'], recipients=[email])
-            msg.body = f'Your OTP is: {otp}'                                
-            
-            # Background Thread जोड़ दिया गया है ताकि सर्वर क्रैश न हो
+            msg.body = f'Your OTP is: {otp}'
+
             threading.Thread(target=send_async_email, args=(app, msg)).start()
-            
+
             flash('OTP has been sent to your email!', 'success')
             return redirect(url_for('reset_password'))
         else:
