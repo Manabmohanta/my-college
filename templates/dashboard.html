@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NSS Student Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background-color: #EDE7F6; color: #202124; padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 750px; }
+
+        /* Top College Header Styles */
+        .college-header { background: linear-gradient(135deg, #4A148C, #673AB7); color: white; padding: 18px; border-radius: 8px; text-align: center; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+        .college-header h1 { font-size: 19px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 4px; text-transform: uppercase; }
+        .college-header p { font-size: 13px; letter-spacing: 1px; font-weight: 500; opacity: 0.95; }
+
+        /* Top Navigation Bar with Profile Avatar */
+        .top-nav { display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 15px 20px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #dadce0; }
+        .top-nav h2 { color: #673AB7; font-size: 20px; }
+
+        /* Circular Profile Avatar (Instagram style) */
+        .profile-avatar { width: 42px; height: 42px; background-color: #673AB7; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; font-weight: bold; transition: transform 0.2s; }
+        .profile-avatar:hover { transform: scale(1.08); }
+
+        .card { background: #ffffff; padding: 24px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #dadce0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .qa-title { font-size: 18px; color: #333; margin-bottom: 15px; border-bottom: 2px solid #673AB7; padding-bottom: 5px; }
+
+        /* Notice Board Styles for Students */
+        .notice-box { background: #fff8f8; padding: 12px 15px; border-radius: 6px; margin-bottom: 12px; border-left: 4px solid #d93025; }
+        .notice-title { font-weight: 600; color: #d93025; font-size: 16px; margin-bottom: 4px; }
+        .notice-text { color: #3c4043; font-size: 14px; margin-bottom: 6px; white-space: pre-line; }
+        .notice-date { color: #70757a; font-size: 11px; text-align: right; }
+
+        /* Exam / Quiz Banner Style */
+        .exam-banner { background: linear-gradient(135deg, #673AB7, #512DA8); color: white; padding: 20px; border-radius: 8px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .exam-banner-text h3 { font-size: 18px; margin-bottom: 5px; }
+        .exam-banner-text p { font-size: 13px; opacity: 0.9; }
+        .exam-btn { background-color: #ffffff; color: #673AB7; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 14px; transition: background-color 0.2s; }
+        .exam-btn:hover { background-color: #f1f3f4; }
+
+        /* Important Questions Banner Style */
+        .q-banner { background: linear-gradient(135deg, #00897B, #00695C); color: white; padding: 20px; border-radius: 8px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .q-banner-text h3 { font-size: 18px; margin-bottom: 5px; }
+        .q-banner-text p { font-size: 13px; opacity: 0.9; }
+        .q-btn { background-color: #ffffff; color: #00897B; padding: 10px 18px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 14px; transition: background-color 0.2s; }
+        .q-btn:hover { background-color: #f1f3f4; }
+
+        /* College Footer Details */
+        .college-footer { background: #ffffff; padding: 16px; border-radius: 8px; border: 1px solid #dadce0; text-align: center; color: #5f6368; font-size: 12px; line-height: 1.6; }
+        .college-footer a { color: #673AB7; text-decoration: none; font-weight: 600; }
+        .college-footer a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 🏫 Top College Header -->
+        <div class="college-header">
+            <h1>Banabhumi Degree Mahavidyalaya</h1>
+            <p>NSS VOLUNTEERS</p>
+        </div>
+
+        <!-- Top Bar with Welcome & Circular Profile Link -->
+        <div class="top-nav">
+            <h2>📚 NSS VOLUNTEERS</h2>
+            <!-- Instagram style circular profile button -->
+            <a href="/student/profile" class="profile-avatar" title="View Profile">
+                {{ current_user.ans1[0] | upper }}
+            </a>
+        </div>
+
+        <!-- 📢 Notice Board Section for Students -->
+        <div class="card" style="border-top: 6px solid #d93025;">
+            <div class="qa-title" style="color: #d93025; border-bottom-color: #d93025;">📢 Important Notices & Announcements</div>
+            {% if notices %}
+                {% for n in notices %}
+                <div class="notice-box">
+                    <div class="notice-title">{{ n.title }}</div>
+                    <div class="notice-text">{{ n.content }}</div>
+                    <div class="notice-date">🕒 {{ n.date_posted }}</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="color: #70757a; text-align: center; padding: 10px; font-size: 14px;">No new notices right now.</p>
+            {% endif %}
+        </div>
+
+        <!-- 📝 NSS Online Exam Banner linking to separate page -->
+        <div class="exam-banner">
+            <div class="exam-banner-text">
+                <h3>📝 NSS Official Exam / Test</h3>
+                <p>Click here to open the separate examination page and take your test.</p>
+            </div>
+            <a href="/nss-exam" class="exam-btn">Open Exam Page 🚀</a>
+        </div>
+
+        <!-- 💡 NSS Important Questions Banner linking to separate page -->
+        <div class="q-banner">
+            <div class="q-banner-text">
+                <h3>💡 NSS Important Questions & Answers</h3>
+                <p>Click here to open the separate page containing all important study questions.</p>
+            </div>
+            <a href="/important-questions" class="q-btn">View Questions 📖</a>
+        </div>
+
+        <!-- 📌 Bottom College Footer Info -->
+        <div class="college-footer">
+            <p><strong>AT/P.O.- RANGAMATIA, DIST.- MAYURBHANJ, (ODISHA), PIN - 757049</strong></p>
+            <p>Email ID: <a href="mailto:banabhumimahavidyalaya@gmail.com">banabhumimahavidyalaya@gmail.com</a> | Website: <a href="http://banabhumidegreecollege.org" target="_blank">banabhumidegreecollege.org</a></p>
+        </div>
+    </div>
+</body>
+</html>

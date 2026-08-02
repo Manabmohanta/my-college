@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Profile</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background-color: #EDE7F6; color: #202124; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 450px; }
+        .card { background: #ffffff; padding: 30px; border-radius: 12px; border: 1px solid #dadce0; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .profile-header { border-top: 8px solid #673AB7; text-align: center; margin-bottom: 20px; padding-top: 15px; }
+        .avatar-large { width: 70px; height: 70px; background-color: #673AB7; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; margin: 0 auto 15px auto; }
+        h2 { color: #673AB7; margin-bottom: 5px; }
+        .info-group { margin-bottom: 12px; font-size: 15px; background: #f8f9fa; padding: 10px 14px; border-radius: 6px; border-left: 4px solid #673AB7; display: flex; justify-content: space-between; }
+        .info-label { font-weight: 600; color: #5f6368; }
+        .info-value { color: #202124; font-weight: 500; }
+        .action-links { display: flex; gap: 10px; margin-top: 20px; }
+        a.btn { flex: 1; text-align: center; padding: 10px; text-decoration: none; border-radius: 6px; font-size: 14px; font-weight: 600; }
+        a.edit-btn { background-color: #673AB7; color: white; }
+        a.back-btn { background-color: #f1f3f4; color: #3c4043; border: 1px solid #dadce0; }
+        .logout-container { text-align: center; margin-top: 15px; }
+        a.logout-btn { color: #d93025; text-decoration: none; font-weight: 500; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card profile-header">
+            <div class="avatar-large">{{ current_user.ans1[0] | upper }}</div>
+            <h2>{{ current_user.ans1 }}</h2>
+            <p style="color: #666; font-size: 14px;">NSS Volunteer Profile</p>
+        </div>
+
+        <div class="card" style="border-top: none; padding-top: 0;">
+            <div class="info-group">
+                <span class="info-label">Mobile:</span>
+                <span class="info-value">{{ current_user.ans2 }}</span>
+            </div>
+            <div class="info-group">
+                <span class="info-label">Roll No:</span>
+                <span class="info-value">{{ current_user.ans3 }}</span>
+            </div>
+            <div class="info-group">
+                <span class="info-label">Stream:</span>
+                <span class="info-value">{{ current_user.ans4 }}</span>
+            </div>
+            <div class="info-group">
+                <span class="info-label">Email:</span>
+                <span class="info-value">{{ current_user.email }}</span>
+            </div>
+
+            <div class="action-links">
+                <a href="/edit-profile" class="btn edit-btn">Edit Profile</a>
+                <a href="/" class="btn back-btn">Back to Home</a>
+            </div>
+            
+            <div class="logout-container">
+                <a href="/logout" class="logout-btn">Logout Account</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

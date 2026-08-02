@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NSS Online Examination Portal</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; -webkit-user-select: none; user-select: none; }
+        body { background-color: #EDE7F6; color: #202124; padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 800px; }
+
+        .exam-header { background: #673AB7; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .exam-header h2 { font-size: 22px; }
+        .back-btn { background: #ffffff; color: #673AB7; padding: 8px 16px; text-decoration: none; border-radius: 4px; font-weight: 600; font-size: 14px; }
+        .back-btn:hover { background: #f1f3f4; }
+
+        .card { background: #ffffff; padding: 24px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #dadce0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .question-box { background: #f8f9fa; padding: 16px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #e0e0e0; }
+        .q-title { font-weight: 600; color: #3c4043; margin-bottom: 12px; font-size: 16px; }
+        .option-label { display: block; margin-bottom: 10px; font-size: 14px; cursor: pointer; color: #333; }
+        .option-label input { margin-right: 8px; }
+
+        .btn-submit { background-color: #673AB7; color: white; border: none; padding: 14px 20px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 15px; width: 100%; }
+        .btn-submit:hover { background-color: #5e35b1; }
+
+        .score-card { background: #e8f5e9; border: 1px solid #c8e6c9; color: #2e7d32; padding: 25px; border-radius: 8px; text-align: center; margin-bottom: 20px; font-size: 20px; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Exam Header -->
+        <div class="exam-header">
+            <h2>📝 NSS Online Examination Portal</h2>
+            <a href="/profile" class="back-btn">Dashboard</a>
+        </div>
+
+        {% if submitted %}
+        <div class="score-card">
+            🎉 Exam Submitted Successfully!<br>
+            <span style="font-size: 28px; color: #1b5e20; margin-top: 5px; display: block;">Your Score: {{ score }}</span>
+            {% if already_submitted %}
+            <p style="font-size: 14px; color: #5f6368; margin-top: 10px; font-weight: normal;">Note: You have already submitted this exam and cannot retake it unless reset by admin.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="card">
+            {% if questions and not submitted %}
+            <form id="examForm" method="POST">
+                {% for q in questions %}
+                <div class="question-box">
+                    <div class="q-title">Q{{ loop.index }}. {{ q.question_text }}</div>
+                    <label class="option-label"><input type="radio" name="question_{{ q.id }}" value="{{ q.option1 }}" required> A) {{ q.option1 }}</label>
+                    <label class="option-label"><input type="radio" name="question_{{ q.id }}" value="{{ q.option2 }}"> B) {{ q.option2 }}</label>
+                    <label class="option-label"><input type="radio" name="question_{{ q.id }}" value="{{ q.option3 }}"> C) {{ q.option3 }}</label>
+                    <label class="option-label"><input type="radio" name="question_{{ q.id }}" value="{{ q.option4 }}"> D) {{ q.option4 }}</label>
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn-submit" onclick="return confirm('क्या आप वाकई अपना एग्जाम सबमिट करना चाहते हैं? सबमिट करने के बाद दोबारा बदलाव नहीं कर पाएंगे।');">Submit Exam</button>
+            </form>
+            {% elif not submitted %}
+            <p style="text-align: center; color: #70757a; padding: 30px; font-size: 16px;">No exam questions available right now or exam is not published yet by admin. Please check back later!</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // Disable Right-Click, Copy, Cut, Paste, and Text Selection
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('copy', event => event.preventDefault());
+        document.addEventListener('cut', event => event.preventDefault());
+        document.addEventListener('paste', event => event.preventDefault());
+
+        {% if questions and not submitted %}
+        // Prevent Back Button Navigation during Exam
+        history.pushState(null, null, location.href);
+        window.onpopstate = function () {
+            history.go(1);
+            alert("⚠️ Warning: Back button is disabled during the exam!");
+        };
+
+        // Anti-Cheating: Detect Tab Switch or Minifying Browser / Screenshot attempt warnings
+        let warningCount = 0;
+        document.addEventListener("visibilitychange", function () {
+            if (document.hidden) {
+                warningCount++;
+                if (warningCount >= 2) {
+                    alert("⚠️ आपने परीक्षा के दौरान स्क्रीन या टैब बदलने की कोशिश की है! आपका एग्जाम ऑटो-सबमिट किया जा रहा है।");
+                    document.getElementById("examForm").submit();
+                } else {
+                    alert("⚠️ चेतावनी (" + warningCount + "/2): परीक्षा के दौरान ऐप या टैब बदलना सख्त मना है! दोबारा ऐसा करने पर एग्जाम ऑटो-सबमिट हो जाएगा।");
+                }
+            }
+        });
+        {% endif %}
+    </script>
+</body>
+</html>
+

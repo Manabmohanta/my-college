@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NSS Important Questions</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background-color: #EDE7F6; color: #202124; padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 750px; }
+
+        /* Top Navigation Bar */
+        .top-nav { display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 15px 20px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #dadce0; flex-wrap: wrap; gap: 10px; }
+        .top-nav h2 { color: #00897B; font-size: 20px; }
+        .back-btn { background-color: #00897B; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 13px; display: inline-block; }
+        .back-btn:hover { background-color: #00695C; }
+
+        .card { background: #ffffff; padding: 24px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #dadce0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .qa-title { font-size: 18px; color: #333; margin-bottom: 15px; border-bottom: 2px solid #00897B; padding-bottom: 5px; }
+
+        .qa-box { background: #f8f9fa; padding: 14px 16px; border-radius: 6px; margin-bottom: 12px; border-left: 4px solid #00897B; }
+        .question { font-weight: 600; color: #3c4043; margin-bottom: 6px; font-size: 15px; }
+        .answer { color: #137333; font-weight: 500; font-size: 14px; white-space: pre-line; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Top Bar with Title & Back Button -->
+        <div class="top-nav">
+            <h2>💡 NSS Study Material</h2>
+            <a href="/profile" class="back-btn">⬅️ Back to Dashboard</a>
+        </div>
+
+        <!-- Important Questions Card -->
+        <div class="card">
+            <div class="qa-title">📖 NSS Important Questions & Answers</div>
+
+            {% if important_questions %}
+                {% for iq in important_questions %}
+                <div class="qa-box">
+                    <div class="question">Q{{ loop.index }}. {{ iq.question_title }}</div>
+                    <div class="answer">उत्तर: {{ iq.answer_text }}</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="color: #70757a; text-align: center; padding: 20px; font-size: 14px;">No important questions published yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

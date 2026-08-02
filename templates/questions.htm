@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Your Profile</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background-color: #EDE7F6; color: #202124; padding: 20px 10px; display: flex; justify-content: center; }
+        .form-container { width: 100%; max-width: 640px; }
+        .header-card { background: #673AB7; color: white; padding: 24px; border-radius: 8px 8px 0 0; margin-bottom: 12px; }
+        .header-card h1 { font-size: 24px; font-weight: 500; }
+        .card { background: #ffffff; padding: 24px; border-radius: 8px; margin-bottom: 12px; border: 1px solid #dadce0; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+        .question-title { font-size: 15px; font-weight: 500; margin-bottom: 16px; color: #202124; }
+        .required { color: #d93025; margin-left: 4px; }
+        input[type="text"], input[type="tel"] { width: 100%; border: none; border-bottom: 1px solid #dadce0; padding: 8px 0; font-size: 14px; outline: none; background: transparent; transition: border-color 0.2s; }
+        input:focus { border-bottom: 2px solid #673AB7; }
+        .btn-submit { background-color: #673AB7; color: white; border: none; padding: 10px 24px; border-radius: 4px; font-weight: 500; cursor: pointer; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <div class="header-card">
+            <h1>Complete Your Profile 👋</h1>
+        </div>
+
+        <form method="POST">
+            <div class="card">
+                <div class="question-title">1. Full Name<span class="required">*</span></div>
+                <input type="text" name="ans1" placeholder="Enter your full name" required>
+            </div>
+
+            <div class="card">
+                <div class="question-title">2. Mobile Number<span class="required">*</span></div>
+                <input type="tel" name="ans2" placeholder="Enter your mobile number" required>
+            </div>
+
+            <div class="card">
+                <div class="question-title">3. Roll Number<span class="required">*</span></div>
+                <input type="text" name="ans3" placeholder="Enter your roll number" required>
+            </div>
+
+            <div class="card">
+                <div class="question-title">4. Stream<span class="required">*</span></div>
+                <input type="text" name="ans4" placeholder="Enter your stream (Arts, Science, Commerce)" required>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end;">
+                <button type="submit" class="btn-submit">Submit & Continue</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
