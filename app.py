@@ -161,6 +161,31 @@ def admin_dashboard():
 
     return render_template('admin_dashboard.html', users=users_list, total=total_submissions, notices=notices_list, quiz_questions=quiz_questions, important_questions=important_questions)
 
+# --- NEW: Admin Password Change Route ---
+@app.route('/admin/change-password', methods=['POST'])
+@login_required
+def admin_change_password():
+    if not current_user.is_admin:
+        flash('Unauthorized access!', 'danger')
+        return redirect(url_for('login'))
+
+    current_password = request.form.get('current_password')
+    new_password = request.form.get('new_password')
+    confirm_password = request.form.get('confirm_password')
+
+    if not check_password_hash(current_user.password, current_password):
+        flash('Current password is incorrect!', 'danger')
+    elif new_password != confirm_password:
+        flash('New passwords do not match!', 'danger')
+    elif not new_password or len(new_password) < 6:
+        flash('Password must be at least 6 characters long!', 'danger')
+    else:
+        current_user.password = generate_password_hash(new_password, method='scrypt')
+        db.session.commit()
+        flash('Admin password changed successfully!', 'success')
+
+    return redirect(url_for('admin_dashboard'))
+
 @app.route('/admin/delete_user/<int:user_id>', methods=['POST'])
 @login_required
 def delete_user(user_id):
@@ -477,6 +502,8 @@ def create_default_admin():
     
     if admin:
         admin.password = hashed_pw
+        admin.is_admin = True
+        admin.is_questions_submitted = True
         db.session.commit()
     else:
         default_admin = User(

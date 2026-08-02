@@ -8,7 +8,8 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
         body { background-color: #EDE7F6; color: #202124; padding: 20px; }
         .container { width: 100%; max-width: 950px; margin: 0 auto; }
-        .header { background: #673AB7; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header { background: #673AB7; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header-btns { display: flex; gap: 10px; align-items: center; }
         .stats-card { background: white; padding: 15px 20px; border-radius: 8px; border: 1px solid #dadce0; margin-bottom: 20px; font-size: 16px; }
 
         /* Notice Board Section Styles */
@@ -21,7 +22,7 @@
         .btn-primary:hover { background-color: #5e35b1; }
 
         .btn-success { background-color: #137333; color: white; border: none; padding: 8px 14px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 13px; }
-        .btn-success:hover { background-color: #0d5023; }                                       
+        .btn-success:hover { background-color: #0d5023; }
         .btn-warning { background-color: #f9ab00; color: #202124; border: none; padding: 8px 14px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 13px; }
         .btn-warning:hover { background-color: #e39d00; }
 
@@ -29,13 +30,22 @@
         .notice-content h4 { color: #333; font-size: 15px; margin-bottom: 4px; }
         .notice-content p { color: #5f6368; font-size: 13px; margin-bottom: 6px; white-space: pre-line; }
         .notice-content span { color: #70757a; font-size: 11px; }
-
         .table-responsive { overflow-x: auto; background: white; border-radius: 8px; border: 1px solid #dadce0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         table { width: 100%; border-collapse: collapse; text-align: left; }
         th, td { padding: 12px 16px; border-bottom: 1px solid #dadce0; font-size: 14px; }
         th { background-color: #f5f5f5; color: #5f6368; font-weight: 600; }
         tr:hover { background-color: #f8f9fa; }
-        .logout-btn { background: #d93025; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; font-size: 14px; }
+        .logout-btn { background: #d93025; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; font-size: 14px; font-weight: 600; }
+        .logout-btn:hover { background-color: #b31412; }
+        .password-btn { background: #ff9800; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px; font-size: 14px; font-weight: 600; border: none; cursor: pointer; }
+        .password-btn:hover { background-color: #f57c00; }
+
+        /* Modal Styles */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 25px; border-radius: 8px; width: 100%; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .modal-header h3 { color: #673AB7; font-size: 18px; }
+        .close-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #5f6368; }
 
         /* Delete Button Style */
         .delete-btn { background-color: #d93025; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; }
@@ -46,8 +56,23 @@
     <div class="container">
         <div class="header">
             <h2>👑 Admin Dashboard</h2>
-            <a href="/logout" class="logout-btn">Logout</a>
-        </div>                                                                                  
+            <div class="header-btns">
+                <button type="button" class="password-btn" onclick="openPasswordModal()">Change Password</button>
+                <a href="/logout" class="logout-btn">Logout</a>
+            </div>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div style="padding: 12px; margin-bottom: 20px; border-radius: 4px; background-color: {% if category == 'danger' %}#f8d7da{% else %}#d4edda{% endif %}; color: {% if category == 'danger' %}#721c24{% else %}#155724{% endif %}; border: 1px solid {% if category == 'danger' %}#f5c6cb{% else %}#c3e6cb{% endif %};">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
         <div class="stats-card">
             📊 Total Form Submissions: <strong>{{ total }}</strong>
         </div>
@@ -69,7 +94,7 @@
             {% if notices %}
                 {% for n in notices %}
                 <div class="notice-item">
-                    <div class="notice-content">                                                                                  
+                    <div class="notice-content">                                                          
                         <h4>{{ n.title }}</h4>
                         <p>{{ n.content }}</p>
                         <span>🕒 {{ n.date_posted }}</span>
@@ -81,7 +106,7 @@
                     </div>
                 </div>
                 {% endfor %}
-            {% else %}
+            {% else %}                                                                                                    
                 <p style="color: #70757a; font-size: 14px;">No notices published yet.</p>
             {% endif %}
         </div>
@@ -104,7 +129,7 @@
                 {% for iq in important_questions %}
                 <div class="notice-item">
                     <div class="notice-content">
-                        <h4>Q{{ loop.index }}: {{ iq.question_title }} 
+                        <h4>Q{{ loop.index }}: {{ iq.question_title }}
                             {% if iq.is_published %}
                                 <span style="color: green; font-size: 12px;">(Published)</span>
                             {% else %}
@@ -114,7 +139,6 @@
                         <p>{{ iq.answer_text }}</p>
                     </div>
                     <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-                        <!-- Publish / Unpublish button for Important Question -->
                         {% if iq.is_published %}
                             <form action="{{ url_for('unpublish_important_q', q_id=iq.id) }}" method="POST">
                                 <button type="submit" class="btn-warning">🔒 Unpublish</button>
@@ -142,7 +166,6 @@
                 <h3 style="margin: 0; color: #673AB7;">🧠 Add Exam Questions for NSS Students</h3>
 
                 <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                    <!-- Publish Exam Button -->
                     {% if quiz_questions %}
                     <form action="{{ url_for('publish_quiz') }}" method="POST" onsubmit="return confirm('क्या आप इस परीक्षा को छात्रों के लिए लाइव (Public) करना चाहते हैं?');">
                         <button type="submit" class="btn-success">🚀 Publish Exam</button>
@@ -152,7 +175,6 @@
                         <button type="submit" class="btn-warning">🔒 Unpublish Exam</button>
                     </form>
 
-                    <!-- Delete All Questions Button -->
                     <form action="{{ url_for('delete_all_quiz') }}" method="POST" onsubmit="return confirm('चेतावनी: इससे सभी परीक्षा प्रश्न डिलीट हो जाएंगे और सभी छात्रों का परीक्षा रिकॉर्ड रीसेट हो जाएगा! क्या आप पक्का डिलीट करना चाहते हैं?');">
                         <button type="submit" class="delete-btn" style="font-weight: 600;">🗑️ Delete All Questions</button>
                     </form>
@@ -212,8 +234,8 @@
                         <th>Full Name</th>
                         <th>Mobile Number</th>
                         <th>Roll Number</th>
-                        <th>Stream</th>
-                        <th>Email ID</th>                                                                               
+                        <th>Stream</th>                                                                                           
+                        <th>Email ID</th>                                                                 
                         <th>Exam Score</th>
                         <th>Action</th>
                     </tr>
@@ -237,7 +259,7 @@
                         <td>
                             <form action="{{ url_for('delete_user', user_id=u.id) }}" method="POST" onsubmit="return confirm('क्या आप वाकई इस छात्र का डेटा डिलीट करना चाहते हैं?');">
                                 <button type="submit" class="delete-btn">Delete</button>
-                            </form>
+                            </form>                                                                                               
                         </td>
                     </tr>
                     {% else %}
@@ -249,5 +271,48 @@
             </table>
         </div>
     </div>
+
+    <!-- Change Password Modal -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Change Admin Password</h3>
+                <button type="button" class="close-btn" onclick="closePasswordModal()">&times;</button>
+            </div>
+            <form action="{{ url_for('admin_change_password') }}" method="POST">
+                <div class="form-group">
+                    <label style="font-size: 13px; font-weight: 600; margin-bottom: 4px; display: block;">Current Password</label>
+                    <input type="password" name="current_password" class="form-control" placeholder="Enter current password" required>
+                </div>
+                <div class="form-group">
+                    <label style="font-size: 13px; font-weight: 600; margin-bottom: 4px; display: block;">New Password</label>
+                    <input type="password" name="new_password" class="form-control" placeholder="Enter new password (min 6 chars)" required>
+                </div>
+                <div class="form-group">
+                    <label style="font-size: 13px; font-weight: 600; margin-bottom: 4px; display: block;">Confirm New Password</label>
+                    <input type="password" name="confirm_password" class="form-control" placeholder="Confirm new password" required>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
+                    <button type="button" class="btn-warning" onclick="closePasswordModal()" style="background-color: #e0e0e0; color: #333;">Cancel</button>
+                    <button type="submit" class="btn-primary">Update Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openPasswordModal() {
+            document.getElementById('passwordModal').style.display = 'flex';
+        }
+        function closePasswordModal() {
+            document.getElementById('passwordModal').style.display = 'none';
+        }
+        window.onclick = function(event) {
+            let modal = document.getElementById('passwordModal');
+            if (event.target == modal) {
+                closePasswordModal();
+            }
+        }
+    </script>
 </body>
 </html>
