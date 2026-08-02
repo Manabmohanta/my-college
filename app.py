@@ -431,12 +431,11 @@ def forgot():
             otp = random.randint(100000, 999999)
             session['reset_otp'] = str(otp)
             session['reset_email'] = email
-            
-            # --- यहाँ ओटीपी को सीधे Render के लाइव कंसोल लॉग्स में प्रिंट किया गया है ---
+
             print(f"\n================================")
             print(f"PASSWORD RESET OTP FOR {email}: {otp}")
             print(f"================================\n")
-            
+
             msg = Message('OTP for Password Reset', sender=app.config['MAIL_USERNAME'], recipients=[email])
             msg.body = f'Your OTP is: {otp}'
 
@@ -471,9 +470,15 @@ def logout():
 
 def create_default_admin():
     admin_email = "admin@gmail.com"
-    admin = User.query.filter_by(email=admin_email).first()
-    if not admin:
-        hashed_pw = generate_password_hash("admin123", method='scrypt')
+    new_password = "Manab@7205"
+    
+    admin = User.query.filter_by(email=admin_email, is_admin=True).first()
+    hashed_pw = generate_password_hash(new_password, method='scrypt')
+    
+    if admin:
+        admin.password = hashed_pw
+        db.session.commit()
+    else:
         default_admin = User(
             email=admin_email,
             password=hashed_pw,
