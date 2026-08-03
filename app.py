@@ -16,7 +16,7 @@ app.config['SECRET_KEY'] = 'manab_secret_key_9938'
 # Supabase PostgreSQL Database URI (आपका पासवर्ड जोड़ दिया गया है)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'DATABASE_URL',
-    'postgresql://postgres:Manab@7205@db.wqffthonvxejgymkdbbn.supabase.co:5432/postgres'
+    'postgresql://postgres:aSCFrzXdIwSqDyTi@db.wqffthonvxejgymkdbbn.supabase.co:5432/postgres'
 )
 
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
