@@ -8,10 +8,17 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from flask_mail import Mail, Message
+import psycopg2  # PostgreSQL सपोर्ट के लिए
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'manab_secret_key_9938'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+
+# Supabase PostgreSQL Database URI (आपका पासवर्ड जोड़ दिया गया है)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+    'DATABASE_URL',
+    'postgresql://postgres:Manab@7205@db.wqffthonvxejgymkdbbn.supabase.co:5432/postgres'
+)
+
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
 # --- Email Config ---
@@ -499,7 +506,6 @@ def create_default_admin():
     admin = User.query.filter_by(email=admin_email, is_admin=True).first()
 
     if not admin:
-        # केवल तभी डिफ़ॉल्ट एडमिन बनाएगा जब डेटाबेस में एडमिन बिल्कुल न हो
         hashed_pw = generate_password_hash(new_password, method='scrypt')
         default_admin = User(
             email=admin_email,
